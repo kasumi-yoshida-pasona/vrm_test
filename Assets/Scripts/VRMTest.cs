@@ -12,16 +12,16 @@ namespace VRMTest
 {
 public class VRMTest : MonoBehaviour
     {
-        [SerializeField]
-        private RuntimeAnimatorController m_animCtrl;
+        [SerializeField] private RuntimeAnimatorController m_animCtrl;
         private string filePath;
         [SerializeField] private Button OneTimeButton;
         [SerializeField] private Button FiftyTimesButton;
         [SerializeField] private Button FiveHundredsTimesButton;
+        [SerializeField] private Text VRMNum;
 
         void Start()
         {
-            filePath = Path.Combine(Application.streamingAssetsPath, "1903884660012638236.vrm");
+            filePath = Path.Combine(Application.streamingAssetsPath, "20240110092904.vrm");
             OneTimeButton.onClick.AddListener(OnClickOneTime);
             FiftyTimesButton.onClick.AddListener(OnClickFiftyTimes);
             FiveHundredsTimesButton.onClick.AddListener(OnClick500Times);
@@ -74,12 +74,12 @@ public class VRMTest : MonoBehaviour
                     if (isURI)
                     {
                         var request = UnityWebRequest.Get(filePath);
-                        var requestAwaiter = request.SendWebRequest();
+                        await request.SendWebRequest();
 
-                        while (!requestAwaiter.isDone)
-                        {
-                            await Task.Delay(10);
-                        }
+                        // while (!request.isDone)
+                        // {
+                        //     await Task.Delay(1);
+                        // }
 
                         if (request.result == UnityWebRequest.Result.Success)
                         {
@@ -105,6 +105,7 @@ public class VRMTest : MonoBehaviour
                             Debug.Log(ex.Message);
                         }
                     }
+                    VRMNum.text = i + 1 + "vrm";
                 }
                 for (int i = 0; i < loopNum; i++)
                 {
@@ -126,12 +127,12 @@ public class VRMTest : MonoBehaviour
                 if (isURI)
                 {
                     var request = UnityWebRequest.Get(filePath);
-                    var requestAwaiter = request.SendWebRequest();
+                    await request.SendWebRequest();
 
-                    while (!requestAwaiter.isDone)
-                    {
-                        await Task.Delay(10);
-                    }
+                    // while (!request.isDone)
+                    // {
+                    //     await Task.Delay(1);
+                    // }
 
                     if (request.result == UnityWebRequest.Result.Success)
                     {
@@ -157,14 +158,16 @@ public class VRMTest : MonoBehaviour
                         Debug.Log(ex.Message);
                     }
                 }
+                VRMNum.text = i + 1 + "vrm";
             }
         }
 
         async Task<GameObject> runtimeLoadVRMAsync(byte[] data, string filePath)
         {
-            RuntimeGltfInstance instance = await VrmUtility.LoadBytesAsync(filePath, data, new RuntimeOnlyAwaitCaller());
+            // RuntimeGltfInstance instance = await VrmUtility.LoadBytesAsync(filePath, data, new RuntimeOnlyAwaitCaller());
             // ↓はWebGLで並列処理を避けるためにImmediate
-            // RuntimeGltfInstance instance = await VrmUtility.LoadBytesAsync(filePath, data, awaitCaller: (IAwaitCaller)new ImmediateCaller());
+            RuntimeGltfInstance instance = await VrmUtility.LoadBytesAsync(filePath, data, awaitCaller: (IAwaitCaller)new ImmediateCaller());
+            Debug.Log(instance);
             instance.ShowMeshes();
             GameObject vrmObj = instance.gameObject;
             if (vrmObj != null)
@@ -174,17 +177,16 @@ public class VRMTest : MonoBehaviour
                 {
                     animCtrl.runtimeAnimatorController = m_animCtrl;
                 }
-                await Task.Delay(100);
+                // await Task.Delay(1);
             }
             return vrmObj;
         }
 
         void deleteVRMAsync(GameObject vrmObj)
         {
-            
-                // モデルの削除
-                Destroy(vrmObj);
-                vrmObj = null;
+            // モデルの削除
+            Destroy(vrmObj);
+            vrmObj = null;
         }
 
     }
